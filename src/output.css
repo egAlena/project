@@ -90,7 +90,6 @@
   }
   img, svg, video, canvas, audio, iframe, embed, object {
     display: block;
-    vertical-align: middle;
   }
   img, video {
     max-width: 100%;
@@ -215,12 +214,6 @@
   .bg-\[\#E0FB\] {
     background-color: #E0FB;
   }
-  .bg-\[\#E0\] {
-    background-color: #E0;
-  }
-  .bg-\[\#\] {
-    background-color: #;
-  }
   .py-\[50px\] {
     padding-block: 50px;
   }
@@ -276,4 +269,24 @@
       --tw-outline-style: solid;
     }
   }
+}
+
+footer h1{
+    color: rgba(171, 196, 255, 1);
+    font-family: Comic Sans MS;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 24px;
+    text-align: left;
+    margin-bottom: 30px;
+}
+
+footer p{
+    color: rgba(171, 196, 255, 1);
+    font-family: Comic Sans MS;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 19px;
+    text-align: left;
+    margin-top: 16px;
 }
