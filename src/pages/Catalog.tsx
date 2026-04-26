@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Product } from "../components/Product.tsx";
 import { Button } from "../components/Button.tsx";
 import { Input } from "../components/Input.tsx";
@@ -13,25 +13,23 @@ interface ProductType {
 }
 
 const Catalog = () => {
-    const [products, setProducts] = useState<ProductType[]>([
-        {
-            id: 1,
-            imageSrc: "../public/img/item1.png",
-            imageAlt: "item1",
-            title: "КАМЕРА “ЧТО-ТО”",
-            price: 5000,
-            description: "много описания много описания много описания много описания много описания"
-        },
+    const [products, setProducts] = useState<ProductType[]>([]);
+    const [loading, setLoading] = useState(true);
 
-        {
-            id: 2,
-            imageSrc: "../public/img/item2.png",
-            imageAlt: "item2",
-            title: "ВИДЕОКАМЕРА “ЧТО-ТО”",
-            price: 6000,
-            description: "много описания много описания много описания много описания много описания"
-        }
-    ]);
+    useEffect(() => {
+        const fetchProducts = async() =>{
+            try{
+                const response = await fetch("http://localhost:5000/api/products");
+                const data = await response.json();
+                setProducts(data);
+                setLoading(false);
+            } catch(error) {
+                console.error("ОШибка загрузки: ", error);
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    } ,[]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newProduct, setNewProduct] = useState({
@@ -41,8 +39,20 @@ const Catalog = () => {
         imageSrc: ""
     });
 
-    const handleDeleteProduct = (id: number) => {
-        setProducts(prevProducts => prevProducts.filter(product => product.id !== id));
+    const handleDeleteProduct = async (id: number) => {
+        try{
+            const response = await fetch(`http://localhost:5000/api/products/${id}`, {
+                method: "DELETE",
+            });
+
+            if (response.ok) {
+                setProducts(prevProducts => prevProducts.filter(product => product.id!== id));
+            } else{
+                console.error("Ошибка при удалении на сервере");
+            }
+        } catch(error){
+            console.error("Ошибка удаления: ", error);
+        }
     };
 
     const handleOpenModal = () => {
@@ -67,23 +77,46 @@ const Catalog = () => {
         }));
     };
 
-    const handleAddProduct = () => {
+    const handleAddProduct = async () => {
         if (newProduct.title && newProduct.price && newProduct.description && newProduct.imageSrc) {
-            const newId = Math.max(...products.map(p => p.id), 0) + 1;
-            const productToAdd: ProductType = {
-                id: newId,
+            try{
+                const productToAdd = {
                 imageSrc: newProduct.imageSrc,
                 imageAlt: newProduct.title,
                 title: newProduct.title,
                 price: parseFloat(newProduct.price),
                 description: newProduct.description
             };
-            setProducts(prev => [...prev, productToAdd]);
-            handleCloseModal();
+
+            const response = await fetch("http://localhost:5000/api/products", {
+                method: "POST", 
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(productToAdd),
+            });
+
+            if(response.ok){
+                const savedProducts = await response.json();
+
+                setProducts(prev => [...prev, savedProducts]);
+                handleCloseModal();
+            } else{
+                alert("Ошибка при добавлении товрара на сервер");
+            }
+            } catch (error) {
+                console.error("Ошибка добавления: ", error);
+                alert("Не удалось добавить товар");
+            }
+
         } else {
             alert("Пожалуйста, заполните все поля");
         }
     };
+
+    if (loading){
+        return <div className="container mx-auto p-4 text-center">Зфгрузка товаров....</div>;
+    }
 
     return (
         <div className="container mx-auto p-4">
